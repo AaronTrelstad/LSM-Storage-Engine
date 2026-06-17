@@ -29,6 +29,8 @@ namespace lsm
             }
         };
 
+        Node *Head() const { return head_; }
+
     private:
         int RandomLevel();
 

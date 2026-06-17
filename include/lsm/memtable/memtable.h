@@ -28,8 +28,9 @@ namespace lsm
 
         private:
             friend class MemTable;
-            explicit Iterator(SkipList::Node *start);
+            explicit Iterator(SkipList::Node *start, const MemTable* memtable);
             SkipList::Node *current_;
+            const MemTable* memtable_;
         };
 
         Iterator NewIterator() const;

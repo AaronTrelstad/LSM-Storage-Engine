@@ -24,7 +24,34 @@ namespace lsm
         return memory_usage_ + entry_size <= max_size_;
     }
 
-    size_t MemTable::MemoryUsage() const {
+    size_t MemTable::MemoryUsage() const
+    {
         return memory_usage_;
+    }
+
+    MemTable::Iterator::Iterator(SkipList::Node *start, const MemTable *memtable) : current_(start), memtable_(memtable) {}
+
+    void MemTable::Iterator::SeekToFirst()
+    {
+        current_ = memtable_->skiplist_.Head()->next[0].load(std::memory_order_acquire);
+    }
+
+    bool MemTable::Iterator::Valid() const
+    {
+        return current_ != nullptr;
+    }
+
+    void MemTable::Iterator::Next()
+    {
+        current_ = current_->next[0].load(std::memory_order_acquire);
+    }
+
+    std::string_view MemTable::Iterator::key() const
+    {
+        return current_->key;
+    }
+    std::string_view MemTable::Iterator::value() const
+    {
+        return current_->value;
     }
 }
