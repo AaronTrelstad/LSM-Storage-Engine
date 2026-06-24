@@ -29,6 +29,11 @@ namespace lsm
         return memory_usage_;
     }
 
+    MemTable::Iterator MemTable::NewIterator() const
+    {
+        return Iterator(nullptr, this);
+    }
+
     MemTable::Iterator::Iterator(SkipList::Node *start, const MemTable *memtable) : current_(start), memtable_(memtable) {}
 
     void MemTable::Iterator::SeekToFirst()

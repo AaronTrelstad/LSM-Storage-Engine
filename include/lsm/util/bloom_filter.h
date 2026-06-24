@@ -7,7 +7,6 @@
 
 namespace lsm
 {
-
     class BloomFilter
     {
     public:

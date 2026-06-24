@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <stdexcept>
+#include <functional>
 
 namespace lsm
 {
@@ -48,32 +49,36 @@ namespace lsm
         }
     }
 
-    bool SSTableReader::Get(const std::string_view key, std::string *value) const
+    bool SSTableReader::Get(std::string_view key, std::string *value) const
+    {
+        return SearchBlock(data_block_, key, value);
+    }
+
+    void SSTableReader::ForEach(std::function<void(std::string_view, std::string_view)> cb) const
     {
         std::string_view input(data_block_);
-
-        while (!input.empty())
+        std::string_view k, v;
+        while (GetLengthPrefixedSlice(&input, &k) && GetLengthPrefixedSlice(&input, &v))
         {
-            std::string_view entry_key;
-            if (!GetLengthPrefixedSlice(&input, &entry_key))
-                break;
+            cb(k, v);
+        }
+    }
 
-            std::string_view entry_value;
-            if (!GetLengthPrefixedSlice(&input, &entry_value))
-                break;
-
+    bool SSTableReader::SearchBlock(std::string_view block, std::string_view key, std::string *value)
+    {
+        std::string_view input(block);
+        std::string_view entry_key, entry_value;
+        while (GetLengthPrefixedSlice(&input, &entry_key) &&
+               GetLengthPrefixedSlice(&input, &entry_value))
+        {
             if (entry_key == key)
             {
                 *value = std::string(entry_value);
                 return true;
             }
-
             if (entry_key > key)
-            {
                 break;
-            }
         }
-
         return false;
     }
 }
