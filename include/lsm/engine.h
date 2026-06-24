@@ -31,6 +31,7 @@ namespace lsm
 
         uint64_t sequence_;
         uint64_t next_file_number_;
+        uint32_t sync_count_;       
         std::string data_dir_;
     };
 

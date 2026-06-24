@@ -11,7 +11,7 @@
 namespace lsm
 {
     Engine::Engine(const std::string &data_dir)
-        : data_dir_(data_dir), sequence_(0), next_file_number_(0)
+        : data_dir_(data_dir), sequence_(0), next_file_number_(0), sync_count_(0)
     {
         std::filesystem::create_directories(data_dir_);
 
@@ -95,12 +95,19 @@ namespace lsm
 
         sequence_++;
         wal_->Append(sequence_, key, value);
-        wal_->Sync();
+        if (++sync_count_ >= kWALSyncInterval)
+        {
+            wal_->Sync();
+            sync_count_ = 0;
+        }
         memtable_->Put(key, value);
     }
 
     void Engine::FlushMemTable()
     {
+        wal_->Sync();
+        sync_count_ = 0;
+
         auto ns = std::chrono::steady_clock::now().time_since_epoch().count();
         std::string path = data_dir_ + "/L0_" + std::to_string(ns) + "_" +
                            std::to_string(next_file_number_++) + ".sst";

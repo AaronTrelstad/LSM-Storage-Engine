@@ -14,4 +14,6 @@ namespace lsm
     inline constexpr size_t kBlockCacheCapacity = 128;
 
     inline constexpr int kNumLevels = 7;
+
+    inline constexpr uint32_t kWALSyncInterval = 64;
 }
